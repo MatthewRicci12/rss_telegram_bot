@@ -12,7 +12,7 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.types.reply_keyboard_remove import ReplyKeyboardRemove
 from aiogram.types.error_event import ErrorEvent
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, Command
 
 import PrequelBot
 
@@ -42,11 +42,11 @@ if not DEBUGGING:
         LOGGER.critical("error was this: %s", str(event.exception))
 
 
+@router.message(Command("poll_feed"))
+async def poll_feed_handler(message: Message):
+    await prequel_bot.poll_feed(message)
+    
+
 @router.message(CommandStart())
-async def handler(message: Message):
-    user = message.from_user.username
-    if user != "AloeFerr":
-        await message.answer("Oh, Alo- Oh wait, you're not Aloe. Sigh. Here's your payload:\n\n")
-    else:
-        await message.answer("Oh, Aloe!~ Hello babe, you're looking so handsome this evening. Thanks for checkin' in.~\n\nAnyways, here's that message payload:\n\n")
-    await message.answer(f"{message}")
+async def start_handler(message: Message):
+    await prequel_bot.send_start_message(message)
