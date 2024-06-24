@@ -45,6 +45,7 @@ if not DEBUGGING:
 @router.message(CommandStart())
 async def start_handler(message: Message):
     await prequel_bot.send_start_message(message)
+    await prequel_bot.begin_listening(message)
     '''
     Create tasks, one that polls Prequel, and another that polls a more active one, and 
     perhaps another that polls my local thing.
