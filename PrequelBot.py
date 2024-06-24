@@ -19,11 +19,8 @@ class PrequelBot:
         self.num_rss_items = None
 
     async def send_start_message(self: PrequelBot, message: Message):
-            user = message.from_user.username
-            if user != "AloeFerr":
-                await message.answer("Hi there! I'm listening out for future RSS updates.")
-            else:
-                await message.answer("Hey Aloe~ I'll keep an eye on those RSS updates, okay babe? ^_^")
+        user = message.from_user.username
+        await message.answer("Hey Aloe~ I'll keep an eye on those RSS updates, okay babe? ^_^")
 
 
     async def poll_feed(self: PrequelBot, message: Message):
@@ -36,6 +33,9 @@ class PrequelBot:
                  self.num_rss_items = num_of_rss_items
             else:
                  await message.answer("Nothing new!")
+
+    '''
+    '''
             
     def get_num_of_rss_items(self):
         rss_url = "file:///Users/matth/Coding/Python/rss_telegram_bot/mock_rss/mock.xml"

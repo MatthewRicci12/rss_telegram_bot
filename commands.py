@@ -40,13 +40,13 @@ if not DEBUGGING:
             message.text
         )
         LOGGER.critical("error was this: %s", str(event.exception))
-
-
-@router.message(Command("poll_feed"))
-async def poll_feed_handler(message: Message):
-    await prequel_bot.poll_feed(message)
     
 
 @router.message(CommandStart())
 async def start_handler(message: Message):
     await prequel_bot.send_start_message(message)
+    '''
+    Create tasks, one that polls Prequel, and another that polls a more active one, and 
+    perhaps another that polls my local thing.
+    Gather em and run em.
+    '''
