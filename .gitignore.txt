@@ -1,2 +1,7 @@
 testfiles
 .env
+Include
+Lib
+__pycache__
+Scripts
+pyvenv.cfg

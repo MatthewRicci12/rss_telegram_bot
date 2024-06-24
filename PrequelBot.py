@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__file__)
 
 
 PREQUEL_FEED_URL = "https://www.prequeladventure.com/feed/"
-TEST_FEED_URL = "https://lorem-rss.herokuapp.com/feed?unit=minute&interval=1"
+TEST_FEED_URL = "https://lorem-rss.herokuapp.com/feed"
 
 
 class PrequelBot:
@@ -30,7 +30,7 @@ class PrequelBot:
             async with asyncio.TaskGroup() as tg:
                 tg.create_task(self.poll_feed(message, PREQUEL_FEED_URL))
                 tg.create_task(self.poll_feed(message, TEST_FEED_URL))
-            asyncio.sleep(30)
+            await asyncio.sleep(30)
     
     async def poll_feed(self: PrequelBot, message: Message, rss_url: str):
             if not self.num_rss_items:
