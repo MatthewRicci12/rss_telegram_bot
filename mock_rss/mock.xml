@@ -4,15 +4,23 @@
     <link>https://tatoeba.org/</link>
     <description>A mock RSS feed for testing only.</description>
     <atom:link href="https://www.rssboard.org/files/sample-rss-2.xml" rel="self" type="application/rss+xml"/>
-    <item>
+        <item>
     <title>A cool Tatoeba sentence #1</title>
     <link>https://tatoeba.org/en/sentences/show/8070858</link>
     <description>A cool sentence in the Berber language.</description>
-    </item>  
-    <item>
+    </item>    <item>
+    <title>A cool Tatoeba sentence #1</title>
+    <link>https://tatoeba.org/en/sentences/show/8070858</link>
+    <description>A cool sentence in the Berber language.</description>
+    </item>    <item>
+    <title>A cool Tatoeba sentence #1</title>
+    <link>https://tatoeba.org/en/sentences/show/8070858</link>
+    <description>A cool sentence in the Berber language.</description>
+    </item>    <item>
     <title>A cool Tatoeba sentence #1</title>
     <link>https://tatoeba.org/en/sentences/show/8070858</link>
     <description>A cool sentence in the Berber language.</description>
     </item>
+
 </channel>
 </rss>
