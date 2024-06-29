@@ -20,6 +20,7 @@ logging.basicConfig(
 )
 
 LOGGER = logging.getLogger(__file__)
+USERS_FILE_NAME = "users.txt"
 
 
 def construct_task(func: Callable, *args, **kwargs):
@@ -58,14 +59,17 @@ async def main(main_loop_tasks: List[Task] = None, pre_loop_tasks: List[Task] = 
 async def print_shit():
     for i in range(10):
         print("hello\n")
-        await asyncio.sleep(1)
-    
+
 
 if __name__== "__main__":
     parsed_args = argument_parsing(sys.argv[1:])
 
+    #TODO: Task to look at registered users and poll them
+    #Oh wait might not be necessary, I might just need to call tgbot.begin_liostening
     maintask = construct_task(commands.dispatcher.start_polling, commands.tgbot)
+    listening_task = construct_task(commands.prequel_bot.begin_listening)
     main_loop_tasks = []
     main_loop_tasks.append(maintask)
+    main_loop_tasks.append(listening_task)
 
     asyncio.run(main(main_loop_tasks=main_loop_tasks))

@@ -17,11 +17,11 @@ from aiogram.filters import CommandStart, Command
 import PrequelBot
 
 LOGGER = logging.getLogger(__file__)
-
 config = dotenv_values(".env")
 
 DEBUGGING = True if config["DEBUGGING"].lower() == "true" else False
 TOKEN = config["TOKEN"]
+
 
 tgbot = Bot(TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 prequel_bot = PrequelBot.PrequelBot(tgbot)
@@ -42,12 +42,9 @@ if not DEBUGGING:
         LOGGER.critical("error was this: %s", str(event.exception))
     
 
+
 @router.message(CommandStart())
 async def start_handler(message: Message):
-    await prequel_bot.send_start_message(message)
-    await prequel_bot.begin_listening(message)
-    '''
-    Create tasks, one that polls Prequel, and another that polls a more active one, and 
-    perhaps another that polls my local thing.
-    Gather em and run em.
-    '''
+    chat_id = message.chat.id
+    await prequel_bot.register_chat(chat_id)
+    await prequel_bot.send_start_message(chat_id)
