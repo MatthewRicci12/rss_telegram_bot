@@ -3,6 +3,7 @@ from __future__ import annotations
 from aiogram import Bot
 from aiogram.types import Message
 from collections import namedtuple
+import os
 from rss_parser import RSSParser
 from requests import get, Session
 from requests_file import FileAdapter
@@ -20,12 +21,10 @@ TEST_FEED_URL = "http://localhost/mock.xml"
 CHATS_FILE_NAME = "chats.json"
 
 def pairwise(iterable):
-    "s -> (s0, s1), (s2, s3), (s4, s5), ..."
     a = iter(iterable)
     return zip(a, a)
 
 class PrequelBot:
-    """Contains all the logic for this bot"""
     def __init__(self: PrequelBot, underlying_bot: Bot):
         self.underlying_bot = underlying_bot
         self.feeds = {}
@@ -44,57 +43,54 @@ class PrequelBot:
                 return True
         return False
     
+    def serialize_feeds(self, fh):
+        import copy
+
+        feeds_copy = copy.deepcopy(self.feeds)
+
+        for chat_id in feeds_copy.keys():
+            feeds = feeds_copy[chat_id]
+            for i in range(len(feeds)):
+                feeds[i] = feeds[i].__dict__
+        
+        json.dump(feeds_copy, fh)
+
     async def register_chat(self, chat_id):
         lock = asyncio.Lock()
         async with lock:
-            with open(CHATS_FILE_NAME, "r+") as fh:
-                try:
-                    chats_to_feeds = json.load(fh)
-                    if chat_id in chats_to_feeds:
-                        return
-                    json.dump({chat_id : {"Prequel" : PREQUEL_FEED_URL, "Test" : TEST_FEED_URL}}, fh)
-                except json.JSONDecodeError:
-                    json.dump({chat_id : {"Prequel" : PREQUEL_FEED_URL, "Test" : TEST_FEED_URL}}, fh)
+            if str(chat_id) in self.feeds:
+                return
+            with open(CHATS_FILE_NAME, "w") as fh:
+                self.feeds[chat_id] = [Feed("Prequel", PREQUEL_FEED_URL), Feed("Test", TEST_FEED_URL)]
+                self.serialize_feeds(fh)
 
                 
     def load_feeds(self):
         with open(CHATS_FILE_NAME, "r") as fh:
             try:
-                chats_to_feeds = json.load(fh)
-                x = 3
-            except json.JSONDecodeError:
-                return
-            # chat_info = fh.read()
-            # if not chat_info:
-            #     return
-            # chat_info = chat_info.split("\n\n")
+                decoded_feeds = json.load(fh)
+                for chat_id, list_of_feeds in decoded_feeds.items():
+                    cur_feeds_list = []
+                    for feed_dict in list_of_feeds:
+                        cur_feeds_list.append(Feed(feed_dict["name"], feed_dict["url"]))
+                    self.feeds[chat_id] = cur_feeds_list
 
-            # for chat_info_packet in chat_info:
-            #     split_chat_info_packet = chat_info_packet.split()
-            #     cur_chat_id = split_chat_info_packet[0]
-            #     cur_chat_feeds = []
-
-            #     for feed_name, feed_url in pairwise(split_chat_info_packet[1:]):
-            #         cur_feed = Feed(feed_name, feed_url)
-            #         cur_chat_feeds.append(cur_feed)
-
-            #     self.feeds[cur_chat_id] = cur_chat_feeds
-
+            except json.JSONDecodeError as e:
+                print(e.msg)
                  
 
     async def begin_listening(self):
         while True:
             async with asyncio.TaskGroup() as tg:
-                for cur_chat_id, feeds in self.feeds.items():
-                    tg.create_task(self.poll_feeds(cur_chat_id, feeds))
-            await asyncio.sleep(30)
+                for chat_id in self.feeds.keys():
+                    tg.create_task(self.poll_feeds(chat_id))
+            await asyncio.sleep(10)
     
-    async def poll_feeds(self: PrequelBot, chat_id: int, feeds: List[Feed]):
-            for feed in feeds:
-                cur_num_of_rss_items = self.get_num_of_rss_items(feed)
+    async def poll_feeds(self: PrequelBot, chat_id: int):
+            feed_list = self.feeds[chat_id]
 
-                if not feed.num_items:
-                    feed.num_items = self.get_num_of_rss_items(feed)
+            for feed in feed_list:
+                cur_num_of_rss_items = feed.get_num_of_rss_items()
 
                 if cur_num_of_rss_items > feed.num_items:
                     await self.underlying_bot.send_message(chat_id, f"There's been an update to your {feed.name} feed!")
@@ -102,25 +98,24 @@ class PrequelBot:
                 else:
                     await self.underlying_bot.send_message(chat_id, f"Nothing new from your {feed.name} feed!")
 
-    def get_num_of_rss_items(self, feed: Feed):
+
+    
+
+class Feed:
+    def __init__(self, name, url):
+        self.name = name
+        self.url = url
+        self.num_items = self.get_num_of_rss_items()
+
+    def get_num_of_rss_items(self):
 
         session = Session()
 
-
-        if (feed.name == "Test"):
-            print("TEST")
-            response = session.get(feed.url, verify=False)
+        if (self.name == "Test"):
+            response = session.get(self.url, verify=False)
         else:
-            response = session.get(feed.url)
+            response = session.get(self.url)
 
         rss = RSSParser.parse(response.text)
 
         return len(rss.channel.items)
-    
-
-
-class Feed:
-    def __init__(self, name, url):
-         self.name = name
-         self.url = url
-         self.num_items = None
